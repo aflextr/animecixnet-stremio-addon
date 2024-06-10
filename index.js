@@ -22,7 +22,7 @@ const instance = Axios.create();
 const axios = setupCache(instance);
 axiosRetry(axios, { retries: 2 });
 
-const myCache = new NodeCache();
+const myCache = new NodeCache({ stdTTL: 15 * 60, checkperiod: 21600 });
 const CACHE_MAX_AGE = 4 * 60 * 60; // 4 hours in seconds
 const STALE_REVALIDATE_AGE = 4 * 60 * 60; // 4 hours
 const STALE_ERROR_AGE = 7 * 24 * 60 * 60; // 7 days
@@ -225,10 +225,6 @@ app.get('/addon/stream/:type/:id/', async (req, res, next) => {
         id = String(id).replace(".json","");
         if (id) {
             var cached = myCache.get(id);
-            if (cached) {
-                return respond(res, { streams: cached })
-
-            }
             var detail = {};
             var typeValue;
 
@@ -280,7 +276,6 @@ app.get('/addon/stream/:type/:id/', async (req, res, next) => {
                     });
                 }
             });
-            myCache.set(id, stream);
             return respond(res, { streams: stream })
 
         }
