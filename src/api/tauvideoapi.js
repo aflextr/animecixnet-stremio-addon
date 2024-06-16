@@ -76,18 +76,25 @@ function ParseUrl(url) {
 }
 
 async function VideoApi(url) {
-    var values = [];
-    if (url.length > 0) {
-        var code = String(url).replace(`https://i7461752d766964656fo78797az.oszar.com/embed/`, "");
-        url = `https://i7461752d766964656fo78797az.oszar.com/api/video/${code}`;
-        await axios.get(url, { headers: header }).then((value) => {
-            if (value && value.status == 200 && value.statusText == "OK") {
-                values = value.data;
-            }
-        })
+    try {
+        var values = [];
+        if (url.length > 0) {
+            var code = String(url).replace(`https://i7461752d766964656fo78797az.oszar.com/embed/`, "");
+            url = `https://i7461752d766964656fo78797az.oszar.com/api/video/${code}`;
+            await axios.get(url, { headers: header }).then((value) => {
+                if (value && value.status == 200 && value.statusText == "OK") {
+                    values = value.data;
+                }
+            }).catch((error) => {
+                console.log(error);
+            })
+        }
+    } catch (error) {
+        console.log(error);
     }
+
 
     return values;
 }
 
-module.exports = {ParseUrl, VideoApi};
+module.exports = { ParseUrl, VideoApi };

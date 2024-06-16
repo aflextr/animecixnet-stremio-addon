@@ -1,6 +1,6 @@
 const { publishToCentral } = require('stremio-addon-sdk')
 require("dotenv").config({ path: "./.env" })
-const searchVideo  = require("./src/search")
+const searchVideo = require("./src/search")
 const MANIFEST = require('./manifest');
 const landing = require("./src/landingTemplate");
 const videos = require("./src/videos");
@@ -85,11 +85,11 @@ app.get('/:userConf/manifest.json', function (req, res) {
 app.get("/addon/catalog/:type/:id/search=:search", async (req, res, next) => {
     try {
         res.set('Cache-Control', `public, max-age=${CACHE_MAX_AGE}, stale-while-revalidate:${STALE_REVALIDATE_AGE}, stale-if-error:${STALE_ERROR_AGE}`);
-        var { type, id,search } = req.params;
+        var { type, id, search } = req.params;
         search = search.replace(".json", "");
         if (id == "animecix") {
-                
-            var metaData = [];           
+
+            var metaData = [];
 
             var cached = myCache.get(search + type);
             if (cached) {
@@ -133,7 +133,7 @@ app.get('/addon/meta/:type/:id/', async (req, res, next) => {
     try {
         res.set('Cache-Control', `public, max-age=${CACHE_MAX_AGE}, stale-while-revalidate:${STALE_REVALIDATE_AGE}, stale-if-error:${STALE_ERROR_AGE}`);
         var { type, id } = req.params;
-        id = id.replace(".json","");
+        id = id.replace(".json", "");
         var findId = String(id).substring(1).replace(".json", "");
         var cached = myCache.get(findId);
         if (cached) {
@@ -222,9 +222,8 @@ app.get('/addon/stream/:type/:id/', async (req, res, next) => {
         res.set('Cache-Control', `public, max-age=${CACHE_MAX_AGE}, stale-while-revalidate:${STALE_REVALIDATE_AGE}, stale-if-error:${STALE_ERROR_AGE}`);
         var stream = [];
         var { type, id } = req.params;
-        id = String(id).replace(".json","");
+        id = String(id).replace(".json", "");
         if (id) {
-            var cached = myCache.get(id);
             var detail = {};
             var typeValue;
 
@@ -232,51 +231,50 @@ app.get('/addon/stream/:type/:id/', async (req, res, next) => {
                 detail = meta[i].filter(e => e.id == id)[0];
             }
 
-            if (type === "series") {
-                var getVideo = await videos.GetVideos(detail._id, detail.episode, detail.season);
-                var streamLinks = await videos.ListVideos(getVideo);
-                typeValue = getVideo;
-            } else {
-                var streamLinks = await videos.ListVideos(detail.anime.videos);
-                typeValue = streamLinks
-            }
+            if (typeof (detail) != "undefined") {
+                if (type === "series") {
+                    var getVideo = await videos.GetVideos(detail._id, detail.episode, detail.season);
+                    var streamLinks = await videos.ListVideos(getVideo);
+                    typeValue = getVideo;
+                } else {
+                    var streamLinks = await videos.ListVideos(detail.anime.videos);
+                    typeValue = streamLinks
+                }
 
-
-
-
-            for (const element of typeValue) {
-                element.extra = String(element.extra).trim().toLocaleLowerCase();
-                element.name = String(element.name).trim().toLocaleLowerCase();
-                if (element.extra === 'yapay çeviri' || element.extra === 'yapay çeviri v3' || element.extra === '') {
-                    if (element.name === "tau video") {
-                        if (element && typeof (element.captions) !== "undefined" && typeof (element.captions[0].url) !== "undefined") {
-                            subs.push({
-                                id: id,
-                                lang: "tur",
-                                url: element.captions[0].url,
-                            })
-                            break;
+                for (const element of typeValue) {
+                    element.extra = String(element.extra).trim().toLocaleLowerCase();
+                    element.name = String(element.name).trim().toLocaleLowerCase();
+                    if (element.extra === 'yapay çeviri' || element.extra === 'yapay çeviri v3' || element.extra === '') {
+                        if (element.name === "tau video") {
+                            if (element && typeof (element.captions) !== "undefined" && typeof (element.captions[0].url) !== "undefined") {
+                                subs.push({
+                                    id: id,
+                                    lang: "tur",
+                                    url: element.captions[0].url,
+                                })
+                                break;
+                            }
                         }
                     }
                 }
-            }
 
-            streamLinks.forEach(element => {
-                if (element.support == "stremio") {
-                    stream.push({
-                        url: element.parseUrl,
-                        name: element.label + "\n" + element.subName,
-                        description: element.videoProvider + "\n" + element.size,
-                    });
-                } else {
-                    stream.push({
-                        externalUrl: element.url,
-                        name: "Animecix \n" + element.subName,
-                        description: element.videoProvider + "\n" + element.size,
-                    });
-                }
-            });
-            return respond(res, { streams: stream })
+                streamLinks.forEach(element => {
+                    if (element.support == "stremio") {
+                        stream.push({
+                            url: element.parseUrl,
+                            name: element.label + "\n" + element.subName,
+                            description: element.videoProvider + "\n" + element.size,
+                        });
+                    } else {
+                        stream.push({
+                            externalUrl: element.url,
+                            name: "Animecix \n" + element.subName,
+                            description: element.videoProvider + "\n" + element.size,
+                        });
+                    }
+                });
+                return respond(res, { streams: stream })
+            }
 
         }
     } catch (error) {
