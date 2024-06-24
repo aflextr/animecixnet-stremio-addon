@@ -22,7 +22,8 @@ const instance = Axios.create();
 const axios = setupCache(instance);
 axiosRetry(axios, { retries: 2 });
 
-const myCache = new NodeCache({ stdTTL: 15 * 60, checkperiod: 21600 });
+const myCache = new NodeCache({checkperiod:172800});
+
 const CACHE_MAX_AGE = 4 * 60 * 60; // 4 hours in seconds
 const STALE_REVALIDATE_AGE = 4 * 60 * 60; // 4 hours
 const STALE_ERROR_AGE = 7 * 24 * 60 * 60; // 7 days
@@ -35,6 +36,7 @@ var subs = [];
 
 
 var respond = function (res, data) {
+    res.set('Cache-Control', `public, max-age=${CACHE_MAX_AGE}, stale-while-revalidate:${STALE_REVALIDATE_AGE}, stale-if-error:${STALE_ERROR_AGE}`);
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Headers', '*');
     res.setHeader('Content-Type', 'application/json; charset=utf-8');
@@ -84,7 +86,7 @@ app.get('/:userConf/manifest.json', function (req, res) {
 
 app.get("/addon/catalog/:type/:id/search=:search", async (req, res, next) => {
     try {
-        res.set('Cache-Control', `public, max-age=${CACHE_MAX_AGE}, stale-while-revalidate:${STALE_REVALIDATE_AGE}, stale-if-error:${STALE_ERROR_AGE}`);
+        
         var { type, id, search } = req.params;
         search = search.replace(".json", "");
         if (id == "animecix") {
@@ -131,7 +133,6 @@ app.get("/addon/catalog/:type/:id/search=:search", async (req, res, next) => {
 
 app.get('/addon/meta/:type/:id/', async (req, res, next) => {
     try {
-        res.set('Cache-Control', `public, max-age=${CACHE_MAX_AGE}, stale-while-revalidate:${STALE_REVALIDATE_AGE}, stale-if-error:${STALE_ERROR_AGE}`);
         var { type, id } = req.params;
         id = id.replace(".json", "");
         var findId = String(id).substring(1).replace(".json", "");
@@ -219,7 +220,6 @@ app.get('/addon/meta/:type/:id/', async (req, res, next) => {
 
 app.get('/addon/stream/:type/:id/', async (req, res, next) => {
     try {
-        res.set('Cache-Control', `public, max-age=${CACHE_MAX_AGE}, stale-while-revalidate:${STALE_REVALIDATE_AGE}, stale-if-error:${STALE_ERROR_AGE}`);
         var stream = [];
         var { type, id } = req.params;
         id = String(id).replace(".json", "");
@@ -309,12 +309,11 @@ function CheckSubtitleFoldersAndFiles() {
 
 app.get('/addon/subtitles/:type/:id/:query?.json', async (req, res, next) => {
     try {
-        res.set('Cache-Control', `public, max-age=${CACHE_MAX_AGE}, stale-while-revalidate:${STALE_REVALIDATE_AGE}, stale-if-error:${STALE_ERROR_AGE}`);
-        CheckSubtitleFoldersAndFiles();
         var { type, id } = req.params;
         id = id.replace(".json", "");
         for await (const element of subs) {
             if (id === element.id) {
+                CheckSubtitleFoldersAndFiles();
                 //video id bulunduktan sonra yapılacaklar
                 var downloadUrl = `https://${process.env.SUBTITLEAI_URL + new URL(element.url).pathname}`;
 
