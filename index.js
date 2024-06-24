@@ -363,9 +363,6 @@ app.get('/addon/subtitles/:type/:id/:query?.json', async (req, res, next) => {
     }
 })
 
-app.get('*', function (req, res) {
-    res.redirect("/")
-});
 
 if (module.parent) {
     module.exports = app;
