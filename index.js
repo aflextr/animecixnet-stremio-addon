@@ -22,7 +22,7 @@ const instance = Axios.create();
 const axios = setupCache(instance);
 axiosRetry(axios, { retries: 2 });
 
-const myCache = new NodeCache({checkperiod:172800});
+const myCache = new NodeCache({ checkperiod: 172800 });
 
 const CACHE_MAX_AGE = 4 * 60 * 60; // 4 hours in seconds
 const STALE_REVALIDATE_AGE = 4 * 60 * 60; // 4 hours
@@ -86,11 +86,10 @@ app.get('/:userConf/manifest.json', function (req, res) {
 
 app.get("/addon/catalog/:type/:id/search=:search", async (req, res, next) => {
     try {
-        
         var { type, id, search } = req.params;
-        search = search.replace(".json", "");
         if (id == "animecix") {
 
+            search = search.replace(".json", "");
             var metaData = [];
 
             var cached = myCache.get(search + type);
@@ -135,20 +134,22 @@ app.get('/addon/meta/:type/:id/', async (req, res, next) => {
     try {
         var { type, id } = req.params;
         id = id.replace(".json", "");
-        var findId = String(id).substring(1).replace(".json", "");
-        var cached = myCache.get(findId);
-        if (cached) {
-            return respond(res, { meta: cached });
-        }
-        var metaObj = {};
-
-        var find = await searchVideo.FindAnimeDetail(findId);
-        find.name_english = find.name_english == '' ? find.name : find.name_english;
-        if (find.type === null || find.type === '') {
-            find.type = find.title_type === "anime" ? "series" : find.title_type;
-        }
-
         if (id) {
+
+            var findId = String(id).substring(1).replace(".json", "");
+            var cached = myCache.get(findId);
+            if (cached) {
+                return respond(res, { meta: cached });
+            }
+            var metaObj = {};
+
+            var find = await searchVideo.FindAnimeDetail(findId);
+            find.name_english = find.name_english == '' ? find.name : find.name_english;
+            if (find.type === null || find.type === '') {
+                find.type = find.title_type === "anime" ? "series" : find.title_type;
+            }
+
+
             metaObj = {
                 id: id,
                 type: type,
@@ -220,10 +221,10 @@ app.get('/addon/meta/:type/:id/', async (req, res, next) => {
 
 app.get('/addon/stream/:type/:id/', async (req, res, next) => {
     try {
-        var stream = [];
         var { type, id } = req.params;
         id = String(id).replace(".json", "");
         if (id) {
+            var stream = [];
             var detail = {};
             var typeValue;
 
@@ -246,7 +247,7 @@ app.get('/addon/stream/:type/:id/', async (req, res, next) => {
                     element.name = String(element.name).trim().toLocaleLowerCase();
                     if (element.extra === 'yapay çeviri' || element.extra === 'yapay çeviri v3' || element.extra === '') {
                         if (element.name === "tau video") {
-                            if (element && typeof (element.captions) !== "undefined" && typeof (element.captions[0].url) !== "undefined") {
+                            if (element && typeof (element.captions) !== "undefined" && typeof (element.captions[0]) !== "undefined") {
                                 subs.push({
                                     id: id,
                                     lang: "tur",
@@ -311,46 +312,48 @@ app.get('/addon/subtitles/:type/:id/:query?.json', async (req, res, next) => {
     try {
         var { type, id } = req.params;
         id = id.replace(".json", "");
-        for await (const element of subs) {
-            if (id === element.id) {
-                CheckSubtitleFoldersAndFiles();
-                //video id bulunduktan sonra yapılacaklar
-                var downloadUrl = `https://${process.env.SUBTITLEAI_URL + new URL(element.url).pathname}`;
+        if (id) {
+            for await (const element of subs) {
+                if (id === element.id) {
+                    CheckSubtitleFoldersAndFiles();
+                    //video id bulunduktan sonra yapılacaklar
+                    var downloadUrl = `https://${process.env.SUBTITLEAI_URL + new URL(element.url).pathname}`;
 
-                var subtitle = "";
+                    var subtitle = "";
 
-                var response = await axios.get(downloadUrl, { method: "GET", headers: header });
-                if (response && response.status == 200 && response.statusText == "OK") {
+                    var response = await axios.get(downloadUrl, { method: "GET", headers: header });
+                    if (response && response.status == 200 && response.statusText == "OK") {
 
-                    var localUrl = "https://" + process.env.HOSTING_URL + `/subs/${id}/${id}.srt`;
+                        var localUrl = "https://" + process.env.HOSTING_URL + `/subs/${id}/${id}.srt`;
 
-                    if (Path.extname(downloadUrl) !== ".srt" && Path.extname(downloadUrl) !== ".ass") {
-                        const outputExtension = '.srt';
-                        const options = {
-                            removeTextFormatting: true,
-                        };
+                        if (Path.extname(downloadUrl) !== ".srt" && Path.extname(downloadUrl) !== ".ass") {
+                            const outputExtension = '.srt';
+                            const options = {
+                                removeTextFormatting: true,
+                            };
 
-                        subtitle = subsrt.convert(response.data, outputExtension, options).subtitle;
-                    } else if (Path.extname(downloadUrl) === ".ass") {
-                        subtitle = ass2srt(response.data)
-                    } else if (Path.extname(downloadUrl) === ".srt") {
-                        subtitle = response.data;
-                    }
-
-                    if (subtitle !== '') {
-                        if (!fs.existsSync(path.join("subs", id))) {
-                            fs.mkdirSync(path.join("subs", id), { recursive: true });
+                            subtitle = subsrt.convert(response.data, outputExtension, options).subtitle;
+                        } else if (Path.extname(downloadUrl) === ".ass") {
+                            subtitle = ass2srt(response.data)
+                        } else if (Path.extname(downloadUrl) === ".srt") {
+                            subtitle = response.data;
                         }
 
-                        fs.writeFileSync(`./subs/${id}/${id}.srt`, subtitle, { encoding: "utf8" });
+                        if (subtitle !== '') {
+                            if (!fs.existsSync(path.join("subs", id))) {
+                                fs.mkdirSync(path.join("subs", id), { recursive: true });
+                            }
 
-                        const subtitles = {
-                            id: "animecix-" + id,
-                            lang: "tur",
-                            url: localUrl
+                            fs.writeFileSync(`./subs/${id}/${id}.srt`, subtitle, { encoding: "utf8" });
+
+                            const subtitles = {
+                                id: "animecix-" + id,
+                                lang: "tur",
+                                url: localUrl
+                            }
+                            return respond(res, { subtitles: [subtitles] })
+
                         }
-                        return respond(res, { subtitles: [subtitles] })
-
                     }
                 }
             }
@@ -358,7 +361,6 @@ app.get('/addon/subtitles/:type/:id/:query?.json', async (req, res, next) => {
     } catch (error) {
         if (error) console.log(error);
     }
-
 })
 
 app.get('*', function (req, res) {
