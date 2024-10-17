@@ -40,12 +40,10 @@ async function ListVideos(list) {
             videos.name = String(videos.name).trim().toLowerCase();
             switch (videos.name) {
                 case "tau video":
+                    videos.url = videos.url.replace("https://i7461752d766964656fo78797az.oszar.com/embed/","")
                     var links = await tauvideoapi.VideoApi(videos.url);
                     links.urls.forEach(videos2 => {
                         var size = videos2.size / 1024000;
-                        var newUrl = new URL(videos2.url);
-                        var linksTau = tauvideoapi.ParseUrl(newUrl.hostname);
-                        videos2.url = `https://${linksTau}${newUrl.pathname}`
                         size = Math.round(size).toString();
                         values.push({
                             url: videos.url,
@@ -57,9 +55,7 @@ async function ListVideos(list) {
                             videoProvider: "tau video || Stremiodan izlenebilir"
                         })
                     });
-
                     break;
-
                 default:
                     var url = parser.ParseUrlVideoProviders(videos.url, videos.name);
                     values.push({

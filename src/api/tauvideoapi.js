@@ -9,79 +9,21 @@ const axios = setupCache(instance);
 axiosRetry(axios, { retries: 2 });
 
 
-
-function ParseUrl(url) {
-    var values;
-    url = String(url).trim().toLowerCase();
-    switch (url) {
-        case "i6b652d6a69757369o73697465z.oszar.com":
-            values = "ke-jiusi.site";
-            break;
-        case "i78752d71696e67o73697465z.oszar.com":
-            values = "xu-qing.site";
-            break;
-        case "i66616e672d64616f7a69o73697465z.oszar.com":
-            values = "fang-daozi.site";
-            break;
-        case "i6f6c6976656d696c6b79776179646f7279626565o636664z.oszar.com":
-            values = "olivemilkywaydorybee.cfd";
-            break;
-        case "i6b652d79756e686169o73697465z.oszar.com":
-            values = "ke-yunhai.site";
-            break;
-        case "i6368752d797579616eo73697465z.oszar.com":
-            values = "chu-yuyan.site";
-            break;
-        case "i6f6c6976656d696c6b79776179646f7279626565o6175746f73z.oszar.com":
-            values = "olivemilkywaydorybee.autos";
-            break;
-        case "i6f6c6976656d696c6b79776179646f7279626565o626561757479z.oszar.com":
-            values = "olivemilkywaydorybee.beauty";
-            break;
-        case "i66616e672d78757a686f6e67o73697465z.oszar.com":
-            values = "fang-xuzhong.site";
-            break;
-        case "i66616e672d6c696e6865o73697465z.oszar.com":
-            values = "fang-linhe.site";
-            break;
-        case "i6569676874682d70617261676f6eo73697465z.oszar.com":
-            values = "eighth-paragon.site";
-            break;
-        case "i686f6e672d62696eo73697465z.oszar.com":
-            values = "hong-bin.site";
-            break;
-        case "i696874617532o6f6e6c696e65z.oszar.com":
-            values = "ihtau2.online";
-            break;
-        case "i696c74617532o6f6e6c696e65z.oszar.com":
-            values = "iltau2.online";
-            break;
-        case "i777777o6261636b626c617a65o636f6dz.oszar.com":
-            values = "ictau2.site";
-            break;
-        case "i697274617531o6f6e6c696e65z.oszar.com":
-            values = "irtau1.online";
-            break;
-        case "i6c69752d7a69636875616eo73697465z.oszar.com":
-            values = "liu-zichuan.site";
-            break;
-        case "i777777o6261636b626c617a65o636f6dz.oszar.com":
-            values = "li-dafu.site";
-            break;
-        default:
-            values = "tau-video.xyz";
-            break;
-    }
-    return values;
-}
-
-async function VideoApi(url) {
+async function VideoApi(code) {
     try {
         var values = [];
-        if (url.length > 0) {
-            var code = String(url).replace(`https://i7461752d766964656fo78797az.oszar.com/embed/`, "");
-            url = `https://i7461752d766964656fo78797az.oszar.com/api/video/${code}`;
-            await axios.get(url, { headers: header }).then((value) => {
+        if (code.length > 0) {
+            var gatewayHeaders = {
+                    "Content-Type": "application/json",
+                    "Cookie": "tau-video_xyz=%7B%22HttpHost%22%3A%22tau-video.xyz%22%2C%22Protokol%22%3A%22http%22%2C%22Port%22%3A80%2C%22KulAdSifre%22%3Anull%2C%22UrlAdresi%22%3A%22%5C%2Fapi%5C%2Fvideo%5C%2F65e08b2835424e1e68a23ae0%22%2C%22GetVeri%22%3Anull%2C%22GitOpjeId%22%3Anull%2C%22DnsAdresi%22%3A0%2C%22URL_Adresi%22%3A%22http%3A%5C%2F%5C%2Ftau-video.xyz%5C%2Fapi%5C%2Fvideo%5C%2F65e08b2835424e1e68a23ae0%22%2C%22GirisIP%22%3A%22104.21.234.159%22%7D",
+                    "Referer": "https://tau-video-dot-xyz.gateway.web.tr/",
+                    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36 Edg/120.0.0.0",
+                    "sec-ch-ua": "\"Not_A Brand\";v=\"8\", \"Chromium\";v=\"120\", \"Microsoft Edge\";v=\"120\"",
+                    "sec-ch-ua-mobile": "?0",
+                    "sec-ch-ua-platform": "Windows",
+            }
+            code = `https://tau-video-dot-xyz.gateway.web.tr/api/video/${code}`;
+            await axios.get(code, { headers: gatewayHeaders }).then((value) => {
                 if (value && value.status == 200 && value.statusText == "OK") {
                     values = value.data;
                 }
@@ -97,4 +39,4 @@ async function VideoApi(url) {
     return values;
 }
 
-module.exports = { ParseUrl, VideoApi };
+module.exports = { VideoApi };
