@@ -7,7 +7,7 @@ const videos = require("./src/videos");
 const Path = require("path");
 const express = require("express");
 const app = express();
-const header = require('./src/header');
+const header = require('./header');
 const fs = require('fs')
 const subsrt = require('subtitle-converter');
 const path = require('path');
@@ -92,14 +92,20 @@ app.get("/addon/catalog/:type/:id/search=:search", async (req, res, next) => {
             search = search.replace(".json", "");
             var metaData = [];
 
-            var cached = myCache.get(search + type);
+            var cached = myCache.get(search + "-" + type);
             if (cached) {
                 return respond(res, { metas: cached });
             }
             var anime = await searchVideo.SearchAnime(search);
 
             for await (const element of anime) {
+                if (!String(element.id).includes("0-")) {
+                    element.id = "0-" + element.id;
+                }
+
+
                 element.name_english = element.name_english == '' ? element.name : element.name_english;
+
                 if (element.type === null || element.type === '') {
                     element.type = element.title_type === "anime" ? "series" : element.title_type;
                 }
@@ -118,7 +124,7 @@ app.get("/addon/catalog/:type/:id/search=:search", async (req, res, next) => {
                     metaData.push(value);
                 }
             }
-            myCache.set(search + type, metaData);
+            myCache.set(search + "-" + type, metaData);
             return respond(res, { metas: metaData });
         } else {
             return respond(res, { metas: [] });
@@ -136,7 +142,7 @@ app.get('/addon/meta/:type/:id/', async (req, res, next) => {
         id = id.replace(".json", "");
         if (id) {
 
-            var findId = String(id).substring(1).replace(".json", "");
+            var findId = String(id).substring(2).replace(".json", "");
             var cached = myCache.get(findId);
             if (cached) {
                 return respond(res, { meta: cached });
@@ -173,9 +179,12 @@ app.get('/addon/meta/:type/:id/', async (req, res, next) => {
             //series or movie check
             if (type === "series") {
                 for (let i = 0; i < find.seasons.length; i++) {
-                    var animeler = await searchVideo.SearchVideoDetail(type, findId, find.name_english, i + 1);
-                    if (animeler && typeof (animeler) !== "undefined") {
-                        animeler.forEach(element => {
+                    var animes = await searchVideo.SearchVideoDetail(type, findId, find.name_english, i + 1);
+                    if (animes && typeof (animes) !== "undefined") {
+                        animes.forEach(element => {
+                            if (!String(element.id).includes("0-")) {
+                                element.id = "0-" + element.id;
+                            }
                             metaObj.videos.push({
                                 id: element.id,
                                 _id: findId,
@@ -193,21 +202,22 @@ app.get('/addon/meta/:type/:id/', async (req, res, next) => {
                 myCache.set(findId, metaObj);
                 return respond(res, { meta: metaObj });
             } else {
-                var animeler = await searchVideo.SearchVideoDetail(type, findId, find.name_english, 1);
+                //movie
+                var animes = await searchVideo.SearchVideoDetail(type, findId, find.name_english, 1);
                 var videos = [];
+                if (!String(animes.id).includes("0-")) {
+                    animes.id = "0-" + animes.id;
+                }
                 videos.push({
-                    id: animeler.id,
+                    id: animes.id,
                     _id: findId,
-                    anime: animeler
+                    anime: animes
 
                 });
                 meta.push(videos);
                 myCache.set(findId, metaObj);
                 return respond(res, { meta: metaObj });
             }
-
-
-
         } else {
             return respond(res, { meta: {} });
         }

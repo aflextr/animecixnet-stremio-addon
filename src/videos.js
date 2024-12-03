@@ -1,4 +1,4 @@
-const header = require("./header");
+const header = require("../header");
 const parser = require("./parser");
 const tauvideoapi = require("./api/tauvideoapi");
 require("dotenv").config({ path: "../.env" });

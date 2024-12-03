@@ -36,7 +36,7 @@ const manifest = {
     }],
     resources: ['stream', 'meta', 'subtitles'],
     types: ["movie", 'series'],
-    idPrefixes: ["0"]
+    idPrefixes: ["0-"]
 }
 
 module.exports = manifest;
