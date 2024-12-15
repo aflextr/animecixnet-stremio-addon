@@ -6,7 +6,7 @@ const header = {
     "sec-ch-ua": '"Not_A Brand";v="8", "Chromium";v="120", "Microsoft Edge";v="120"',
     "sec-ch-ua-mobile": "?0",
     "sec-ch-ua-platform": "Windows",
-    "Authorization":process.env.API_KEY
+    "Authorization":`Bearer ${process.env.API_KEY}`
 }
 
 module.exports = header;
