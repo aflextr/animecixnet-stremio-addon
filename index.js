@@ -1,5 +1,5 @@
 const { publishToCentral } = require('stremio-addon-sdk')
-require("dotenv").config({ path: "./.env" })
+require("dotenv").config()
 const searchVideo = require("./src/search")
 const MANIFEST = require('./manifest');
 const landing = require("./src/landingTemplate");
@@ -391,7 +391,7 @@ if (module.parent) {
     module.exports = app;
 } else {
     app.listen(process.env.PORT || 7000, function () {
-        console.log(`extension running port : ${process.env.PORT}`)
+        console.log(`extension running port : ${process.env.PORT || 7000}`)
     });
 }
 

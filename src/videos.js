@@ -1,7 +1,7 @@
 const header = require("../header");
 const parser = require("./parser");
 const tauvideoapi = require("./api/tauvideoapi");
-require("dotenv").config({ path: "../.env" });
+require("dotenv").config();
 const Axios = require('axios')
 const axiosRetry = require("axios-retry").default;
 const { setupCache } = require("axios-cache-interceptor");
@@ -15,7 +15,7 @@ async function GetVideos(id, episode, season) {
     try {
         var values = [];
         if (id > 0 && episode > 0 && season > 0) {
-            await axios.get(`https://${process.env.PROXY_URL}/secure/episode-videos?titleId=${id}&episode=${episode}&season=${season}`, { headers: header }).then((value) => {
+            await axios.get(`https://${process.env.API_HOST}/episode-videos?titleId=${id}&episode=${episode}&season=${season}`, { headers: header }).then((value) => {
                 if (value && value.status == 200 && value.statusText == "OK") {
                     values = value.data;
                 }
@@ -40,8 +40,8 @@ async function ListVideos(list) {
             videos.name = String(videos.name).trim().toLowerCase();
             switch (videos.name) {
                 case "tau video":
-                    videos.url = videos.url.replace("https://i7461752d766964656fo78797az.oszar.com/embed/","")
-                    var links = await tauvideoapi.VideoApi(videos.url);
+                    var embedId = videos.url.replace("https://tau-video.xyz/embed/","")
+                    var links = await tauvideoapi.VideoApi(embedId);
                     links.urls.forEach(videos2 => {
                         var size = videos2.size / 1024000;
                         size = Math.round(size).toString();

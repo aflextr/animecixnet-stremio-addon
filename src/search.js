@@ -1,5 +1,5 @@
 const header = require("../header");
-require("dotenv").config({ path: "../.env" })
+require("dotenv").config()
 const Axios = require('axios')
 const axiosRetry = require("axios-retry").default;
 const { setupCache } = require("axios-cache-interceptor");
@@ -14,7 +14,7 @@ async function SearchAnime(name) {
     try {
         var values = [];
         name = String(name).replace(" ", "-");
-        await axios.get(`https://${process.env.PROXY_URL}/secure/search/${name}?limit=200`, { headers: header }).then((value) => {
+        await axios.get(`https://${process.env.API_HOST}/search/${name}?limit=200`, { headers: header }).then((value) => {
             if (value && value.status == 200 && value.statusText == "OK") {
                 if (value && typeof (value.data.results) !== "undefined") {
                     values = value.data.results;
@@ -34,7 +34,7 @@ async function FindAnimeDetail(id) {
     try {
         var values;
         if (id > 0) {
-            await axios.get(`https://${process.env.PROXY_URL}/secure/titles/${id}?titleId=${id}`, { headers: header }).then((value) => {
+            await axios.get(`https://${process.env.API_HOST}/titles/${id}`, { headers: header }).then((value) => {
                 if (value && value.status == 200 && value.statusText == "OK") {
                     values = value.data.title;
                 }
@@ -50,7 +50,7 @@ async function FindAnimeId(name, _id) {
     try {
         var values;
         name = String(name).replace(" ", "-");
-        await axios.get(`https://${process.env.PROXY_URL}/secure/search/${name}?limit=200`, { headers: header }).then((value) => {
+        await axios.get(`https://${process.env.API_HOST}/search/${name}?limit=200`, { headers: header }).then((value) => {
             if (value && value.status == 200 && value.statusText == "OK") {
                 for (const element of value.data.results) {
                     if (element._id === _id) {
@@ -72,13 +72,13 @@ async function SearchVideoDetail(type, id, name, seasonNumber) {
         if (id > 0 && name.length > 0 && seasonNumber > 0) {
             name = String(name).replace(" ", "-");
             if (type === "series") {
-                await axios.get(`https://${process.env.PROXY_URL}/secure/titles/${id}?titleId=${id}&titleName=${name}&seasonNumber=${seasonNumber}&perPage=2000`, { headers: header }).then((value) => {
+                await axios.get(`https://${process.env.API_HOST}/titles/${id}?titleId=${id}&titleName=${name}&seasonNumber=${seasonNumber}&perPage=2000`, { headers: header }).then((value) => {
                     if (value && value.status == 200 && value.statusText == "OK") {
                         values = value.data.title.season.episodePagination.data;
                     }
                 })
             } else {
-                await axios.get(`https://${process.env.PROXY_URL}/secure/titles/${id}?titleId=${id}&titleName=${name}`, { headers: header }).then((value) => {
+                await axios.get(`https://${process.env.API_HOST}/titles/${id}?titleId=${id}&titleName=${name}`, { headers: header }).then((value) => {
                     if (value && value.status == 200 && value.statusText == "OK") {
                         values = value.data.title;
                     }
