@@ -150,7 +150,10 @@ app.get('/addon/meta/:type/:id/', async (req, res, next) => {
             var metaObj = {};
 
             var find = await searchVideo.FindAnimeDetail(findId);
-            find.name_english = find.name_english == '' ? find.name : find.name_english;
+            if (typeof(find.name_english) !== "undefined") {
+                find.name_english = find.name_english == '' ? find.name : find.name_english;
+            }
+            
             if (find.type === null || find.type === '') {
                 find.type = find.title_type === "anime" ? "series" : find.title_type;
             }
@@ -249,7 +252,9 @@ app.get('/addon/stream/:type/:id/', async (req, res, next) => {
             if (typeof (detail) != "undefined") {
                 if (type === "series") {
                     var getVideo = await videos.GetVideos(detail._id, detail.episode, detail.season);
-                    var streamLinks = await videos.ListVideos(getVideo);
+                    if (typeof(getVideo) !== "undefined") {
+                        var streamLinks = await videos.ListVideos(getVideo);
+                    }
                     typeValue = getVideo;
                 } else {
                     var streamLinks = await videos.ListVideos(detail.anime.videos);
@@ -272,7 +277,7 @@ app.get('/addon/stream/:type/:id/', async (req, res, next) => {
                         }
                     }
                 }
-
+                
                 streamLinks.forEach(element => {
                     if (element.support == "stremio") {
                         stream.push({
@@ -327,64 +332,64 @@ function CheckSubtitleFoldersAndFiles() {
 }
 
 
-app.get('/addon/subtitles/:type/:id/:query?.json', async (req, res, next) => {
-    try {
-        var { type, id } = req.params;
-        id = id.replace(".json", "");
-        if (id) {
-            for await (const element of subs) {
-                if (id === element.id) {
-                    var localUrl = "https://" + process.env.HOSTING_URL + `/subs/${id}/${id}.srt`;
-                    const subtitles = {
-                        id: "animecix-" + id,
-                        lang: "tur",
-                        url: localUrl
-                    }
-                    CheckSubtitleFoldersAndFiles();
-                    //video id bulunduktan sonra yapılacaklar
-                    if (fs.existsSync(path.join(__dirname, "static", "subs", id))) {
-                        return respond(res, { subtitles: [subtitles] })
-                    }
+// app.get('/addon/subtitles/:type/:id/:query?.json', async (req, res, next) => {
+//     try {
+//         var { type, id } = req.params;
+//         id = id.replace(".json", "");
+//         if (id) {
+//             for await (const element of subs) {
+//                 if (id === element.id) {
+//                     var localUrl = "https://" + process.env.HOSTING_URL + `/subs/${id}/${id}.srt`;
+//                     const subtitles = {
+//                         id: "animecix-" + id,
+//                         lang: "tur",
+//                         url: localUrl
+//                     }
+//                     CheckSubtitleFoldersAndFiles();
+//                     //video id bulunduktan sonra yapılacaklar
+//                     if (fs.existsSync(path.join(__dirname, "static", "subs", id))) {
+//                         return respond(res, { subtitles: [subtitles] })
+//                     }
 
-                    var downloadUrl = `https://${process.env.SUBTITLEAI_URL + new URL(element.url).pathname}`;
+//                     var downloadUrl = `https://${process.env.SUBTITLEAI_URL + new URL(element.url).pathname}`;
 
-                    var subtitle = "";
+//                     var subtitle = "";
 
-                    var response = await axios.get(downloadUrl, { method: "GET", headers: header });
-                    if (response && response.status == 200 && response.statusText == "OK") {
+//                     var response = await axios.get(downloadUrl, { method: "GET", headers: header });
+//                     if (response && response.status == 200 && response.statusText == "OK") {
 
 
 
-                        if (Path.extname(downloadUrl) !== ".srt" && Path.extname(downloadUrl) !== ".ass") {
-                            const outputExtension = '.srt';
-                            const options = {
-                                removeTextFormatting: true,
-                            };
+//                         if (Path.extname(downloadUrl) !== ".srt" && Path.extname(downloadUrl) !== ".ass") {
+//                             const outputExtension = '.srt';
+//                             const options = {
+//                                 removeTextFormatting: true,
+//                             };
 
-                            subtitle = subsrt.convert(response.data, outputExtension, options).subtitle;
-                        } else if (Path.extname(downloadUrl) === ".ass") {
-                            subtitle = ass2srt(response.data)
-                        } else if (Path.extname(downloadUrl) === ".srt") {
-                            subtitle = response.data;
-                        }
+//                             subtitle = subsrt.convert(response.data, outputExtension, options).subtitle;
+//                         } else if (Path.extname(downloadUrl) === ".ass") {
+//                             subtitle = ass2srt(response.data)
+//                         } else if (Path.extname(downloadUrl) === ".srt") {
+//                             subtitle = response.data;
+//                         }
 
-                        if (subtitle !== '') {
-                            if (!fs.existsSync(path.join(__dirname, "static", "subs", id))) {
-                                fs.mkdirSync(path.join(__dirname, "static", "subs", id), { recursive: true });
-                            }
+//                         if (subtitle !== '') {
+//                             if (!fs.existsSync(path.join(__dirname, "static", "subs", id))) {
+//                                 fs.mkdirSync(path.join(__dirname, "static", "subs", id), { recursive: true });
+//                             }
 
-                            fs.writeFileSync(`./static/subs/${id}/${id}.srt`, subtitle, { encoding: "utf8" });
-                            return respond(res, { subtitles: [subtitles] })
+//                             fs.writeFileSync(`./static/subs/${id}/${id}.srt`, subtitle, { encoding: "utf8" });
+//                             return respond(res, { subtitles: [subtitles] })
 
-                        }
-                    }
-                }
-            }
-        }
-    } catch (error) {
-        if (error) console.log(error);
-    }
-})
+//                         }
+//                     }
+//                 }
+//             }
+//         }
+//     } catch (error) {
+//         if (error) console.log(error);
+//     }
+// })
 
 
 if (module.parent) {

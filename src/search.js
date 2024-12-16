@@ -74,7 +74,9 @@ async function SearchVideoDetail(type, id, name, seasonNumber) {
             if (type === "series") {
                 await axios.get(`https://${process.env.API_HOST}/titles/${id}?titleId=${id}&titleName=${name}&seasonNumber=${seasonNumber}&perPage=2000`, { headers: header }).then((value) => {
                     if (value && value.status == 200 && value.statusText == "OK") {
-                        values = value.data.title.season.episodePagination.data;
+                        if (typeof(value.data.title.season.episodePagination) !== "undefined") {
+                            values = value.data.title.season.episodePagination.data;
+                        }
                     }
                 })
             } else {
@@ -84,15 +86,11 @@ async function SearchVideoDetail(type, id, name, seasonNumber) {
                     }
                 })
             }
-
         }
     } catch (error) {
         if (error) console.log(error);
     }
-
     return values;
-
-
 }
 
 module.exports = { SearchAnime, FindAnimeDetail, FindAnimeId, SearchVideoDetail }
