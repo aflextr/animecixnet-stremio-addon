@@ -3,11 +3,11 @@ const axiosRetry = require("axios-retry").default;
 const { setupCache } = require("axios-cache-interceptor");
 const scrapeCookie = require("../scrapeProxyCookie");
 
-var cookie = "tau-video_xyz=%7B%22HttpHost%22%3A%22tau-video.xyz%22%2C%22Protokol%22%3A%22https%22%2C%22Port%22%3A443%2C%22KulAdSifre%22%3Anull%2C%22UrlAdresi%22%3A%22%5C%2F%22%2C%22GetVeri%22%3Anull%2C%22GitOpjeId%22%3Anull%2C%22DnsAdresi%22%3A0%2C%22URL_Adresi%22%3A%22https%3A%5C%2F%5C%2Ftau-video.xyz%5C%2F%22%2C%22GirisIP%22%3A%22104.21.48.1%22%7D";
+var cookie = "";
 
 scrapeCookie.fetchWithCookies("https://tau-video-dot-xyz.gateway.web.tr").then((value) => {
-    if (value.length > 10) {
-        cookie = value;
+    if (value.data.length > 10) {
+        cookie = value.data;
     }
 })
 
