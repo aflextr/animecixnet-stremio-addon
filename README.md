@@ -10,13 +10,13 @@ This is an unofficial Stremio Addon for Turkish subtitle Animes from animecix.ne
 You can install it through
 
 ```sh {"id":"01HSKT0P72G767ZCC6B74KVH6S"}
-https://animecix-stremio-addon.mycodelab.live/
+https://animecixnet-stremio-addon.mycodelab.live/
 ```
 
 or
 
 ```sh {"id":"01HSKT0P7365CE70JETEPZ6JJZ"}
-stremio://animecix-stremio-addon.mycodelab.live/manifest.json
+stremio://animecixnet-stremio-addon.mycodelab.live/manifest.json
 ```
 
 ### Local
