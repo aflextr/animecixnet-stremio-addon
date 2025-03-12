@@ -12,8 +12,8 @@ const axios = setupCache(instance);
 axiosRetry(axios, { retries: 2 });
 
 async function GetVideos(id, episode, season) {
+    var values = [];
     try {
-        var values = [];
         if (id > 0 && episode > 0 && season > 0) {
             await axios.get(`https://${process.env.API_HOST}/episode-videos?titleId=${id}&episode=${episode}&season=${season}`, { headers: header }).then((value) => {
                 if (value && value.status == 200 && value.statusText == "OK") {
@@ -33,9 +33,8 @@ async function GetVideos(id, episode, season) {
 
 
 async function ListVideos(list) {
+    var values = [];
     try {
-        var values = [];
-
         for (let videos of list) {
             videos.name = String(videos.name).trim().toLowerCase();
             switch (videos.name) {
@@ -67,13 +66,11 @@ async function ListVideos(list) {
                     })
                     break;
             }
-
         }
         return values;
     } catch (error) {
         console.log(error);
     }
-
 }
 
 

@@ -11,9 +11,9 @@ axiosRetry(axios, { retries: 2 });
 
 
 async function SearchAnime(name) {
+    var values = [];
+    name = String(name).replace(" ", "-");
     try {
-        var values = [];
-        name = String(name).replace(" ", "-");
         await axios.get(`https://${process.env.API_HOST}/search/${name}?limit=200`, { headers: header }).then((value) => {
             if (value && value.status == 200 && value.statusText == "OK") {
                 if (value && typeof (value.data.results) !== "undefined") {
@@ -31,8 +31,8 @@ async function SearchAnime(name) {
 }
 
 async function FindAnimeDetail(id) {
+    var values;
     try {
-        var values;
         if (id > 0) {
             await axios.get(`https://${process.env.API_HOST}/titles/${id}`, { headers: header }).then((value) => {
                 if (value && value.status == 200 && value.statusText == "OK") {
@@ -47,9 +47,9 @@ async function FindAnimeDetail(id) {
 }
 
 async function FindAnimeId(name, _id) {
+    var values;
+    name = String(name).replace(" ", "-");
     try {
-        var values;
-        name = String(name).replace(" ", "-");
         await axios.get(`https://${process.env.API_HOST}/search/${name}?limit=200`, { headers: header }).then((value) => {
             if (value && value.status == 200 && value.statusText == "OK") {
                 for (const element of value.data.results) {
@@ -60,21 +60,21 @@ async function FindAnimeId(name, _id) {
             }
         })
     } catch (error) {
-        if (error) console.log(error);
+        console.log(error);
     }
 
     return values;
 }
 
 async function SearchVideoDetail(type, id, name, seasonNumber) {
+    var values;
     try {
-        var values;
         if (id > 0 && name.length > 0 && seasonNumber > 0) {
             name = String(name).replace(" ", "-");
             if (type === "series") {
                 await axios.get(`https://${process.env.API_HOST}/titles/${id}?titleId=${id}&titleName=${name}&seasonNumber=${seasonNumber}&perPage=2000`, { headers: header }).then((value) => {
                     if (value && value.status == 200 && value.statusText == "OK") {
-                        if (typeof(value.data.title.season.episodePagination) !== "undefined") {
+                        if (typeof (value.data.title.season.episodePagination) !== "undefined") {
                             values = value.data.title.season.episodePagination.data;
                         }
                     }
@@ -88,7 +88,7 @@ async function SearchVideoDetail(type, id, name, seasonNumber) {
             }
         }
     } catch (error) {
-        if (error) console.log(error);
+        console.log(error);
     }
     return values;
 }
