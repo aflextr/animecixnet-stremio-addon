@@ -1,5 +1,4 @@
 const header = require("../header");
-const parser = require("./parser");
 const tauvideoapi = require("./api/tauvideoapi");
 require("dotenv").config();
 const Axios = require('axios')
@@ -56,9 +55,8 @@ async function ListVideos(list) {
                     });
                     break;
                 default:
-                    var url = parser.ParseUrlVideoProviders(videos.url, videos.name);
                     values.push({
-                        url: url,
+                        url: videos.url,
                         support: "browser",
                         size: "Boyut Bilinmiyor",
                         subName: videos.extra,
