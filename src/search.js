@@ -14,7 +14,7 @@ async function SearchAnime(name) {
     var values = [];
     name = String(name).replace(" ", "-");
     try {
-        await axios.get(`https://${process.env.API_HOST}/search/${name}?limit=200`, { headers: header }).then((value) => {
+        await axios.get(`${process.env.API_HOST}/search/${name}?limit=200`, { headers: header }).then((value) => {
             if (value && value.status == 200 && value.statusText == "OK") {
                 if (value && typeof (value.data.results) !== "undefined") {
                     values = value.data.results;
@@ -34,7 +34,7 @@ async function FindAnimeDetail(id) {
     var values;
     try {
         if (id > 0) {
-            await axios.get(`https://${process.env.API_HOST}/titles/${id}`, { headers: header }).then((value) => {
+            await axios.get(`${process.env.API_HOST}/titles/${id}`, { headers: header }).then((value) => {
                 if (value && value.status == 200 && value.statusText == "OK") {
                     values = value.data.title;
                 }
@@ -50,7 +50,7 @@ async function FindAnimeId(name, _id) {
     var values;
     name = String(name).replace(" ", "-");
     try {
-        await axios.get(`https://${process.env.API_HOST}/search/${name}?limit=200`, { headers: header }).then((value) => {
+        await axios.get(`${process.env.API_HOST}/search/${name}?limit=200`, { headers: header }).then((value) => {
             if (value && value.status == 200 && value.statusText == "OK") {
                 for (const element of value.data.results) {
                     if (element._id === _id) {
@@ -72,7 +72,7 @@ async function SearchVideoDetail(type, id, name, seasonNumber) {
         if (id > 0 && name.length > 0 && seasonNumber > 0) {
             name = String(name).replace(" ", "-");
             if (type === "series") {
-                await axios.get(`https://${process.env.API_HOST}/titles/${id}?titleId=${id}&titleName=${name}&seasonNumber=${seasonNumber}&perPage=2000`, { headers: header }).then((value) => {
+                await axios.get(`${process.env.API_HOST}/titles/${id}?titleId=${id}&titleName=${name}&seasonNumber=${seasonNumber}&perPage=2000`, { headers: header }).then((value) => {
                     if (value && value.status == 200 && value.statusText == "OK") {
                         if (typeof (value.data.title.season.episodePagination) !== "undefined") {
                             values = value.data.title.season.episodePagination.data;
@@ -80,7 +80,7 @@ async function SearchVideoDetail(type, id, name, seasonNumber) {
                     }
                 })
             } else {
-                await axios.get(`https://${process.env.API_HOST}/titles/${id}?titleId=${id}&titleName=${name}`, { headers: header }).then((value) => {
+                await axios.get(`${process.env.API_HOST}/titles/${id}?titleId=${id}&titleName=${name}`, { headers: header }).then((value) => {
                     if (value && value.status == 200 && value.statusText == "OK") {
                         values = value.data.title;
                     }

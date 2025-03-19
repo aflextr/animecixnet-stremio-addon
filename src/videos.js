@@ -14,7 +14,7 @@ async function GetVideos(id, episode, season) {
     var values = [];
     try {
         if (id > 0 && episode > 0 && season > 0) {
-            await axios.get(`https://${process.env.API_HOST}/episode-videos?titleId=${id}&episode=${episode}&season=${season}`, { headers: header }).then((value) => {
+            await axios.get(`${process.env.API_HOST}/episode-videos?titleId=${id}&episode=${episode}&season=${season}`, { headers: header }).then((value) => {
                 if (value && value.status == 200 && value.statusText == "OK") {
                     values = value.data;
                 }

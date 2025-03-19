@@ -17,7 +17,7 @@ const axiosRetry = require("axios-retry").default;
 const { setupCache } = require("axios-cache-interceptor");
 const NodeCache = require("node-cache");
 const scrapeProxy = require("./src/scrapeProxyCookie");
-
+const catalogs = require("./src/catalogs.json");
 const instance = Axios.create();
 const axios = setupCache(instance);
 axiosRetry(axios, { retries: 2 });
@@ -69,10 +69,10 @@ app.get('/:userConf/manifest.json', function (req, res) {
         if (!((req || {}).params || {}).userConf) {
             newManifest.behaviorHints.configurationRequired = true;
             respond(res, newManifest);
-        } else if (req.params.userConf === "store"){
+        } else if (req.params.userConf === "store") {
             newManifest.behaviorHints.configurationRequired = true;
             respond(res, newManifest);
-        } 
+        }
         else {
             newManifest.behaviorHints.configurationRequired = false;
             respond(res, newManifest);
@@ -82,21 +82,70 @@ app.get('/:userConf/manifest.json', function (req, res) {
     }
 });
 
+app.get("/addon/catalog/:type/:id/genre=:genre", async (req, res, next) => {
+    var { type, id, genre } = req.params;
+    var metaData = [];
+    var values = [];
+    id = id.replace(".json", "");
+    genre = genre.replace(".json", "");
+    if (id == "animecix") {
+        const catalogGenres = catalogs[genre];
+        var getUrl = `${process.env.API_HOST}/titles?type=${type}&genre=${catalogGenres}&onlyStreamable=true&page=1&perPage=72`
+        try {
+            await axios.get(getUrl, { headers: header }).then((value) => {
+                if (value && value.status == 200 && value.statusText == "OK") {
+                    if (value && typeof (value.data.pagination.data) !== "undefined") {
+                        values = value.data.pagination.data;
+                    }
+                }
+            })
 
+            for await (const element of values) {
+                if (!String(element.id).includes("0-")) {
+                    element.id = "0-" + element.id;
+                }
+                element.name_english = element.name_english == '' ? element.name : element.name_english;
+
+                if (element.type === null || element.type === '') {
+                    element.type = element.title_type === "anime" ? "series" : element.title_type;
+                }
+
+                if (type === element.type) {
+                    var value = {
+                        id: element.id,
+                        type: element.type,
+                        name: element.name_english,
+                        poster: element.poster,
+                        description: element.description,
+                        genres: []
+                    }
+                    element.genres.forEach((data) => {
+                        value.genres.push(data.display_name);
+                    })
+                    metaData.push(value);
+                }
+            }
+            respond(res, { metas: metaData });
+        } catch (error) {
+            if (error) console.log(error);
+        }
+    }
+
+
+})
 
 
 
 app.get("/addon/catalog/:type/:id/search=:search", async (req, res, next) => {
     try {
         var { type, id, search } = req.params;
+        search = search.replace(".json", "");
         if (id == "animecix") {
-
-            search = search.replace(".json", "");
             var metaData = [];
 
             var cached = myCache.get(search + "-" + type);
             if (cached) {
-                respond(res, { metas: cached,cacheMaxAge: CACHE_MAX_AGE, staleRevalidate: STALE_REVALIDATE_AGE, staleError: STALE_ERROR_AGE });
+                respond(res, { metas: cached, cacheMaxAge: CACHE_MAX_AGE, staleRevalidate: STALE_REVALIDATE_AGE, staleError: STALE_ERROR_AGE });
             }
             var anime = await searchVideo.SearchAnime(search);
 
@@ -127,7 +176,7 @@ app.get("/addon/catalog/:type/:id/search=:search", async (req, res, next) => {
                 }
             }
             myCache.set(search + "-" + type, metaData);
-            respond(res, { metas: metaData,cacheMaxAge: CACHE_MAX_AGE, staleRevalidate: STALE_REVALIDATE_AGE, staleError: STALE_ERROR_AGE } );
+            respond(res, { metas: metaData, cacheMaxAge: CACHE_MAX_AGE, staleRevalidate: STALE_REVALIDATE_AGE, staleError: STALE_ERROR_AGE });
         } else {
             respond(res, { metas: [] });
 
@@ -147,15 +196,15 @@ app.get('/addon/meta/:type/:id/', async (req, res, next) => {
             var findId = String(id).substring(2).replace(".json", "");
             var cached = myCache.get(findId);
             if (cached) {
-                respond(res, { meta: cached,cacheMaxAge: CACHE_MAX_AGE, staleRevalidate: STALE_REVALIDATE_AGE, staleError: STALE_ERROR_AGE  });
+                respond(res, { meta: cached, cacheMaxAge: CACHE_MAX_AGE, staleRevalidate: STALE_REVALIDATE_AGE, staleError: STALE_ERROR_AGE });
             }
             var metaObj = {};
 
             var find = await searchVideo.FindAnimeDetail(findId);
-            if (typeof(find.name_english) !== "undefined") {
+            if (typeof (find.name_english) !== "undefined") {
                 find.name_english = find.name_english == '' ? find.name : find.name_english;
             }
-            
+
             if (find.type === null || find.type === '') {
                 find.type = find.title_type === "anime" ? "series" : find.title_type;
             }
@@ -205,7 +254,7 @@ app.get('/addon/meta/:type/:id/', async (req, res, next) => {
                 }
                 meta.push(metaObj.videos);
                 myCache.set(findId, metaObj);
-                respond(res, { meta: metaObj,cacheMaxAge: CACHE_MAX_AGE, staleRevalidate: STALE_REVALIDATE_AGE, staleError: STALE_ERROR_AGE } );
+                respond(res, { meta: metaObj, cacheMaxAge: CACHE_MAX_AGE, staleRevalidate: STALE_REVALIDATE_AGE, staleError: STALE_ERROR_AGE });
             } else {
                 //movie
                 var animes = await searchVideo.SearchVideoDetail(type, findId, find.name_english, 1);
@@ -221,7 +270,7 @@ app.get('/addon/meta/:type/:id/', async (req, res, next) => {
                 });
                 meta.push(videos);
                 myCache.set(findId, metaObj);
-                respond(res, { meta: metaObj,cacheMaxAge: CACHE_MAX_AGE, staleRevalidate: STALE_REVALIDATE_AGE, staleError: STALE_ERROR_AGE });
+                respond(res, { meta: metaObj, cacheMaxAge: CACHE_MAX_AGE, staleRevalidate: STALE_REVALIDATE_AGE, staleError: STALE_ERROR_AGE });
             }
         } else {
             respond(res, { meta: {} });
@@ -254,7 +303,7 @@ app.get('/addon/stream/:type/:id/', async (req, res, next) => {
             if (typeof (detail) != "undefined") {
                 if (type === "series") {
                     var getVideo = await videos.GetVideos(detail._id, detail.episode, detail.season);
-                    if (typeof(getVideo) !== "undefined") {
+                    if (typeof (getVideo) !== "undefined") {
                         var streamLinks = await videos.ListVideos(getVideo);
                     }
                     typeValue = getVideo;
@@ -279,7 +328,7 @@ app.get('/addon/stream/:type/:id/', async (req, res, next) => {
                         }
                     }
                 }
-                
+
                 streamLinks.forEach(element => {
                     if (element.support == "stremio") {
                         stream.push({
@@ -295,7 +344,7 @@ app.get('/addon/stream/:type/:id/', async (req, res, next) => {
                         });
                     }
                 });
-                respond(res, { streams: stream,cacheMaxAge: CACHE_MAX_AGE, staleRevalidate: STALE_REVALIDATE_AGE, staleError: STALE_ERROR_AGE })
+                respond(res, { streams: stream, cacheMaxAge: CACHE_MAX_AGE, staleRevalidate: STALE_REVALIDATE_AGE, staleError: STALE_ERROR_AGE })
             }
 
         }
@@ -365,8 +414,8 @@ app.get('/addon/subtitles/:type/:id/:query?.json', async (req, res, next) => {
                         }
                     })
                     const subtitleHeader = {
-                        "Referer":`${process.env.SUBTITLEAI_URL}`,
-                        "Cookie":cookie,
+                        "Referer": `${process.env.SUBTITLEAI_URL}`,
+                        "Cookie": cookie,
                         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36 Edg/120.0.0.0",
                         "sec-ch-ua": '"Not_A Brand";v="8", "Chromium";v="120", "Microsoft Edge";v="120"',
                         "sec-ch-ua-mobile": "?0",
@@ -393,7 +442,7 @@ app.get('/addon/subtitles/:type/:id/:query?.json', async (req, res, next) => {
                             }
 
                             fs.writeFileSync(`./static/subs/${id}/${id}.srt`, subtitle, { encoding: "utf8" });
-                            respond(res, { subtitles: [subtitles],cacheMaxAge: CACHE_MAX_AGE, staleRevalidate: STALE_REVALIDATE_AGE, staleError: STALE_ERROR_AGE })
+                            respond(res, { subtitles: [subtitles], cacheMaxAge: CACHE_MAX_AGE, staleRevalidate: STALE_REVALIDATE_AGE, staleError: STALE_ERROR_AGE })
 
                         }
                     }
@@ -411,11 +460,11 @@ if (module.parent) {
 } else {
     app.listen(process.env.PORT || 7000, function (err) {
         if (err) {
-            return console.error("Error :"+err);
+            return console.error("Error :" + err);
         }
         console.log(`extension running port : ${process.env.PORT || 7000}`)
     });
 }
 
 
-//publishToCentral(`https://${process.env.HOSTING_URL}/manifest.json`);
+//publishToCentral(`${process.env.HOSTING_URL}/manifest.json`);
