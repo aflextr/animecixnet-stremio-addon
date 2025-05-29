@@ -11,7 +11,7 @@ const manifest = {
     logo: `${process.env.HOSTING_URL}/images/animecix.png`,
     background: `${process.env.HOSTING_URL}/images/background.png`,
     behaviorHints: {
-        configurable: true,
+        configurable: false,
         configurationRequired: true,
     },
     config: [{
