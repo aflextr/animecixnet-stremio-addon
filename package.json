@@ -13,7 +13,6 @@
     "ass-to-srt": "^1.2.1",
     "axios": "^1.6.2",
     "axios-cache-interceptor": "^1.6.2",
-    "axios-retry": "^4.0.0",
     "dotenv": "^16.3.1",
     "express": "^4.19.2",
     "node-cache": "^5.1.2",

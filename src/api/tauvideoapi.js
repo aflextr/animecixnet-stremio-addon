@@ -1,5 +1,4 @@
 const Axios = require('axios')
-const axiosRetry = require("axios-retry").default;
 const { setupCache } = require("axios-cache-interceptor");
 const scrapeCookie = require("../scrapeProxyCookie");
 
@@ -14,7 +13,6 @@ scrapeCookie.fetchWithCookies("https://tau-video-dot-xyz.gateway.web.tr").then((
 
 const instance = Axios.create();
 const axios = setupCache(instance);
-axiosRetry(axios, { retries: 2 });
 
 
 async function VideoApi(code) {

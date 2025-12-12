@@ -13,14 +13,12 @@ const subsrt = require('subtitle-converter');
 const path = require('path');
 const ass2srt = require('ass-to-srt');
 const Axios = require('axios')
-const axiosRetry = require("axios-retry").default;
 const { setupCache } = require("axios-cache-interceptor");
 const NodeCache = require("node-cache");
 const scrapeProxy = require("./src/scrapeProxyCookie");
 const catalogs = require("./src/catalogs.json");
 const instance = Axios.create();
 const axios = setupCache(instance);
-axiosRetry(axios, { retries: 2 });
 
 const myCache = new NodeCache({ stdTTL: 30 * 60, checkperiod: 300 });
 
