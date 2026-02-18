@@ -32,33 +32,40 @@ async function GetVideos(id, episode, season) {
 async function ListVideos(list) {
     var values = [];
     try {
-        for (let videos of list) {
-            videos.name = String(videos.name).trim().toLowerCase();
-            switch (videos.name) {
+        // defensive: if list is not an array return empty array
+        if (!Array.isArray(list) || list.length === 0) {
+            return values;
+        }
+
+        for (let video of list) {
+            video.name = String(video.name || '').trim().toLowerCase();
+            switch (video.name) {
                 case "tau video":
-                    var embedId = videos.url.replace("https://tau-video.xyz/embed/","")
+                    var embedId = String(video.url || '').replace("https://tau-video.xyz/embed/", "")
                     var links = await tauvideoapi.VideoApi(embedId);
-                    links.urls.forEach(videos2 => {
-                        var size = videos2.size / 1024000;
-                        size = Math.round(size).toString();
-                        values.push({
-                            url: videos.url,
-                            parseUrl: videos2.url,
-                            label: videos2.label,
-                            support: "stremio",
-                            size: size + " MB",
-                            subName: videos.extra,
-                            videoProvider: "tau video || Stremiodan izlenebilir"
-                        })
-                    });
+                    if (links && Array.isArray(links.urls)) {
+                        links.urls.forEach(video2 => {
+                            var size = Number(video2.size) / 1024000 || 0;
+                            size = Math.round(size).toString();
+                            values.push({
+                                url: video.url,
+                                parseUrl: video2.url,
+                                label: video2.label,
+                                support: "stremio",
+                                size: size + " MB",
+                                subName: video.extra,
+                                videoProvider: "tau video || Stremiodan izlenebilir"
+                            })
+                        });
+                    }
                     break;
                 default:
                     values.push({
-                        url: videos.url,
+                        url: video.url,
                         support: "browser",
                         size: "Boyut Bilinmiyor",
-                        subName: videos.extra,
-                        videoProvider: `${videos.name} || Tarayıcıdan izlenebilir`
+                        subName: video.extra,
+                        videoProvider: `${video.name} || Tarayıcıdan izlenebilir`
                     })
                     break;
             }

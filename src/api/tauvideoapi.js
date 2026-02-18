@@ -1,15 +1,5 @@
 const Axios = require('axios')
 const { setupCache } = require("axios-cache-interceptor");
-const scrapeCookie = require("../scrapeProxyCookie");
-
-var cookie = "";
-
-scrapeCookie.fetchWithCookies("https://tau-video-dot-xyz.gateway.web.tr").then((value) => {
-    if (value.data.length > 10) {
-        cookie = value.data;
-    }
-})
-
 
 const instance = Axios.create();
 const axios = setupCache(instance);
@@ -19,17 +9,12 @@ async function VideoApi(code) {
     try {
         var values = [];
         if (code.length > 0) {
-            var gatewayHeaders = {
+            var Headers = {
                 "Content-Type": "application/json",
-                "Cookie": cookie,
-                "Referer": "https://tau-video-dot-xyz.gateway.web.tr/",
-                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36 Edg/120.0.0.0",
-                "sec-ch-ua": "\"Not_A Brand\";v=\"8\", \"Chromium\";v=\"120\", \"Microsoft Edge\";v=\"120\"",
-                "sec-ch-ua-mobile": "?0",
-                "sec-ch-ua-platform": "Windows",
+                "User-Agent": `${process.env.USERAGENT}`,
             }
-            code = `https://tau-video-dot-xyz.gateway.web.tr/api/video/${code}`;
-            await axios.get(code, { headers: gatewayHeaders }).then((value) => {
+            code = `https://tau-video.xyz/api/video/${code}`;
+            await axios.get(code, { headers: Headers }).then((value) => {
                 if (value && value.status == 200 && value.statusText == "OK") {
                     values = value.data;
                 }

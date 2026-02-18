@@ -299,23 +299,29 @@ app.get('/addon/stream/:type/:id/', async (req, res, next) => {
             }
 
             if (typeof (detail) != "undefined") {
+                // initialize defaults
+                let streamLinks = [];
+                let typeValue = [];
+
                 if (type === "series") {
-                    var getVideo = await videos.GetVideos(detail._id, detail.episode, detail.season);
-                    if (typeof (getVideo) !== "undefined") {
-                        var streamLinks = await videos.ListVideos(getVideo);
+                    const getVideo = await videos.GetVideos(detail._id, detail.episode, detail.season);
+                    if (Array.isArray(getVideo) && getVideo.length > 0) {
+                        streamLinks = await videos.ListVideos(getVideo);
+                        typeValue = getVideo; // use raw provider objects for subtitle/caption checks
                     }
-                    typeValue = getVideo;
                 } else {
-                    var streamLinks = await videos.ListVideos(detail.anime.videos);
-                    typeValue = streamLinks
+                    if (detail.anime && Array.isArray(detail.anime.videos) && detail.anime.videos.length > 0) {
+                        streamLinks = await videos.ListVideos(detail.anime.videos);
+                        typeValue = detail.anime.videos; // use raw provider objects for subtitle/caption checks
+                    }
                 }
 
                 for (const element of typeValue) {
-                    element.extra = String(element.extra).trim().toLocaleLowerCase();
-                    element.name = String(element.name).trim().toLocaleLowerCase();
+                    element.extra = String(element.extra || '').trim().toLocaleLowerCase();
+                    element.name = String(element.name || '').trim().toLocaleLowerCase();
                     if (element.extra === 'yapay çeviri' || element.extra === 'yapay çeviri v3' || element.extra === '' || element.extra === "null") {
                         if (element.name === "tau video") {
-                            if (element && typeof (element.captions) !== "undefined" && typeof (element.captions[0]) !== "undefined") {
+                            if (element && Array.isArray(element.captions) && typeof (element.captions[0]) !== "undefined") {
                                 subs.push({
                                     id: id,
                                     lang: "tur",
@@ -380,21 +386,7 @@ function CheckSubtitleFoldersAndFiles() {
 
 }
 
-var subtitleHeader = {
-    "Referer": `${process.env.SUBTITLEAI_URL}`,
-    "Cookie": '',
-    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36 Edg/120.0.0.0",
-    "sec-ch-ua": '"Not_A Brand";v="8", "Chromium";v="120", "Microsoft Edge";v="120"',
-    "sec-ch-ua-mobile": "?0",
-    "sec-ch-ua-platform": "Windows",
-}
-scrapeProxy.fetchWithCookies(`${process.env.SUBTITLEAI_URL}/file/mangacix/1722882341206.ass`).then((value) => {
-    if (value) {
-        if (value.data.length > 10) {
-            subtitleHeader.Cookie = value.data;
-        }
-    }
-})
+
 
 
 app.get('/addon/subtitles/:type/:id/:query?.json', async (req, res, next) => {
@@ -402,6 +394,15 @@ app.get('/addon/subtitles/:type/:id/:query?.json', async (req, res, next) => {
         var { type, id } = req.params;
         id = id.replace(".json", "");
         if (id) {
+
+            var subtitleHeader = {
+                "User-Agent": `${process.env.USERAGENT}`,
+                "sec-ch-ua": '"Not_A Brand";v="8", "Chromium";v="120", "Microsoft Edge";v="120"',
+                "sec-ch-ua-mobile": "?0",
+                "sec-ch-ua-platform": "Windows",
+            }
+
+
             for await (const element of subs) {
                 if (id === element.id) {
                     var localUrl = process.env.HOSTING_URL + `/subs/${id}/${id}.srt`;
