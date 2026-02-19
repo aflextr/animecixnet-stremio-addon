@@ -1,10 +1,10 @@
 require("dotenv").config()
 const manifest = {
 
-    id: 'org.animecixnet-stremio-addon',
+    id: 'animecix-stremio-addon',
     version: '1.2.2',
 
-    name: 'AnimeciX',
+    name: 'AnimeciX (official)',
     description: "AnimeciX'ten türkçe altyazılı animeleri stremionuza getirir.",
 
     contactEmail: "eyup.elitass@gmail.com",
