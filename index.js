@@ -37,7 +37,7 @@ var respond = function (res, data) {
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Headers', '*');
     res.setHeader('Content-Type', 'application/json; charset=utf-8');
-    return res.send(data);
+    res.send(data);
 };
 
 app.get('/', function (req, res) {
@@ -45,35 +45,30 @@ app.get('/', function (req, res) {
     res.send(landing(MANIFEST));
 });
 
-app.get("/:userConf?/configure", function (req, res) {
-    if (req.params.userConf !== "addon") {
-        res.redirect("/addon/configure")
-    } else {
-        res.set('Content-Type', 'text/html');
-        const newManifest = { ...MANIFEST };
-        res.send(landing(newManifest));
-    }
-});
+app.get('/configure', function (req, res) {
+    res.set('Content-Type', 'text/html');
+    const newManifest = { ...MANIFEST };
+    res.send(landing(newManifest));
+})
 
 app.get('/manifest.json', function (req, res) {
     const newManifest = { ...MANIFEST };
-    // newManifest.behaviorHints.configurationRequired = false;
+    newManifest.behaviorHints.configurable = true;
     newManifest.behaviorHints.configurationRequired = true;
-    respond(res, newManifest);
+    return respond(res, newManifest);
 });
+
 app.get('/:userConf/manifest.json', function (req, res) {
     try {
         const newManifest = { ...MANIFEST };
-        if (!((req || {}).params || {}).userConf) {
-            newManifest.behaviorHints.configurationRequired = true;
-            respond(res, newManifest);
-        } else if (req.params.userConf === "store") {
-            newManifest.behaviorHints.configurationRequired = true;
-            respond(res, newManifest);
-        }
-        else {
+        if (!((req || {}).params || {}).userConf) return;
+
+        if (req.params.userConf === "configure") {
+           return respond(res, newManifest);
+        }else if (req.params.userConf === "addon") {
+            newManifest.behaviorHints.configurable = true;
             newManifest.behaviorHints.configurationRequired = false;
-            respond(res, newManifest);
+            return respond(res, newManifest);
         }
     } catch (error) {
         console.log(error);
@@ -123,7 +118,7 @@ app.get("/addon/catalog/:type/:id/genre=:genre", async (req, res, next) => {
                     metaData.push(value);
                 }
             }
-            respond(res, { metas: metaData });
+           return respond(res, { metas: metaData });
         } catch (error) {
             if (error) console.log(error);
         }
@@ -143,7 +138,7 @@ app.get("/addon/catalog/:type/:id/search=:search", async (req, res, next) => {
 
             var cached = myCache.get(search + "-" + type);
             if (cached) {
-                respond(res, { metas: cached, cacheMaxAge: CACHE_MAX_AGE, staleRevalidate: STALE_REVALIDATE_AGE, staleError: STALE_ERROR_AGE });
+               return respond(res, { metas: cached, cacheMaxAge: CACHE_MAX_AGE, staleRevalidate: STALE_REVALIDATE_AGE, staleError: STALE_ERROR_AGE });
             }
             var anime = await searchVideo.SearchAnime(search);
 
@@ -174,9 +169,9 @@ app.get("/addon/catalog/:type/:id/search=:search", async (req, res, next) => {
                 }
             }
             myCache.set(search + "-" + type, metaData);
-            respond(res, { metas: metaData, cacheMaxAge: CACHE_MAX_AGE, staleRevalidate: STALE_REVALIDATE_AGE, staleError: STALE_ERROR_AGE });
+           return  respond(res, { metas: metaData, cacheMaxAge: CACHE_MAX_AGE, staleRevalidate: STALE_REVALIDATE_AGE, staleError: STALE_ERROR_AGE });
         } else {
-            respond(res, { metas: [] });
+            return respond(res, { metas: [] });
 
         }
     } catch (error) {
@@ -194,7 +189,7 @@ app.get('/addon/meta/:type/:id/', async (req, res, next) => {
             var findId = String(id).substring(2).replace(".json", "");
             var cached = myCache.get(findId);
             if (cached) {
-                respond(res, { meta: cached, cacheMaxAge: CACHE_MAX_AGE, staleRevalidate: STALE_REVALIDATE_AGE, staleError: STALE_ERROR_AGE });
+                return respond(res, { meta: cached, cacheMaxAge: CACHE_MAX_AGE, staleRevalidate: STALE_REVALIDATE_AGE, staleError: STALE_ERROR_AGE });
             }
             var metaObj = {};
 
@@ -252,7 +247,7 @@ app.get('/addon/meta/:type/:id/', async (req, res, next) => {
                 }
                 meta.push(metaObj.videos);
                 myCache.set(findId, metaObj);
-                respond(res, { meta: metaObj, cacheMaxAge: CACHE_MAX_AGE, staleRevalidate: STALE_REVALIDATE_AGE, staleError: STALE_ERROR_AGE });
+                return respond(res, { meta: metaObj, cacheMaxAge: CACHE_MAX_AGE, staleRevalidate: STALE_REVALIDATE_AGE, staleError: STALE_ERROR_AGE });
             } else {
                 //movie
                 var animes = await searchVideo.SearchVideoDetail(type, findId, find.name_english, 1);
@@ -268,10 +263,10 @@ app.get('/addon/meta/:type/:id/', async (req, res, next) => {
                 });
                 meta.push(videos);
                 myCache.set(findId, metaObj);
-                respond(res, { meta: metaObj, cacheMaxAge: CACHE_MAX_AGE, staleRevalidate: STALE_REVALIDATE_AGE, staleError: STALE_ERROR_AGE });
+                return respond(res, { meta: metaObj, cacheMaxAge: CACHE_MAX_AGE, staleRevalidate: STALE_REVALIDATE_AGE, staleError: STALE_ERROR_AGE });
             }
         } else {
-            respond(res, { meta: {} });
+            return respond(res, { meta: {} });
         }
     } catch (error) {
         if (error) console.log(error);
@@ -348,7 +343,7 @@ app.get('/addon/stream/:type/:id/', async (req, res, next) => {
                         });
                     }
                 });
-                respond(res, { streams: stream, cacheMaxAge: CACHE_MAX_AGE, staleRevalidate: STALE_REVALIDATE_AGE, staleError: STALE_ERROR_AGE })
+                return respond(res, { streams: stream, cacheMaxAge: CACHE_MAX_AGE, staleRevalidate: STALE_REVALIDATE_AGE, staleError: STALE_ERROR_AGE })
             }
 
         }
@@ -414,7 +409,7 @@ app.get('/addon/subtitles/:type/:id/:query?.json', async (req, res, next) => {
                     CheckSubtitleFoldersAndFiles();
                     //video id bulunduktan sonra yapılacaklar
                     if (fs.existsSync(path.join(__dirname, "static", "subs", id))) {
-                        respond(res, { subtitles: [subtitles] })
+                        return respond(res, { subtitles: [subtitles] })
                     }
 
                     var downloadUrl = `${process.env.SUBTITLEAI_URL + new URL(element.url).pathname}`;
@@ -443,7 +438,7 @@ app.get('/addon/subtitles/:type/:id/:query?.json', async (req, res, next) => {
                             }
 
                             fs.writeFileSync(`./static/subs/${id}/${id}.srt`, subtitle, { encoding: "utf8" });
-                            respond(res, { subtitles: [subtitles], cacheMaxAge: CACHE_MAX_AGE, staleRevalidate: STALE_REVALIDATE_AGE, staleError: STALE_ERROR_AGE })
+                            return respond(res, { subtitles: [subtitles], cacheMaxAge: CACHE_MAX_AGE, staleRevalidate: STALE_REVALIDATE_AGE, staleError: STALE_ERROR_AGE })
 
                         }
                     }
