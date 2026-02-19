@@ -13,6 +13,10 @@ const manifest = {
     behaviorHints: {
 
     },
+    stremioAddonsConfig: {
+        issuer: "https://stremio-addons.net",
+        signature: "eyJhbGciOiJkaXIiLCJlbmMiOiJBMTI4Q0JDLUhTMjU2In0..gPDy4BS0VF6f1QQHx2zwhw.QUCYIFV2Y2QqXvPkujVNZxzSGwYq6szaRczGdqaeeGaNZZ6vALN2zAgBq_pEwPgRLNCdvBvh-k7VpDxCcfJkhj_uApUUPV2_ifFj8JKJ-4f7ZxRCVbPP1rxEN78Us66z.7dr5W4621gaN3Xavf-QlLw"
+    },
     config: [{
         key: "animecix",
         type: "select",
@@ -25,7 +29,7 @@ const manifest = {
         extra: [{
             name: "search",
             isRequired: false
-        },{
+        }, {
             name: "genre",
             isRequired: false,
             options: [
@@ -69,7 +73,7 @@ const manifest = {
                 "Dövüş Sanatları",
                 "Yuri",
                 "Yaoi"
-              ]
+            ]
         }],
         genres: [
             "Dram",
@@ -112,7 +116,7 @@ const manifest = {
             "Dövüş Sanatları",
             "Yuri",
             "Yaoi"
-          ]
+        ]
     },
     {
         type: "movie",
@@ -121,7 +125,7 @@ const manifest = {
         extra: [{
             name: "search",
             isRequired: false
-        },{
+        }, {
             name: "genre",
             isRequired: false,
             options: [
@@ -165,7 +169,7 @@ const manifest = {
                 "Dövüş Sanatları",
                 "Yuri",
                 "Yaoi"
-              ]
+            ]
         }],
         genres: [
             "Dram",
@@ -208,9 +212,9 @@ const manifest = {
             "Dövüş Sanatları",
             "Yuri",
             "Yaoi"
-          ]
+        ]
     }],
-    resources: ['addon_catalog','catalog','stream', 'meta', 'subtitles'],
+    resources: ['addon_catalog', 'catalog', 'stream', 'meta', 'subtitles'],
     types: ["movie", 'series'],
     idPrefixes: ["0-"]
 }
