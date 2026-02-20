@@ -64,8 +64,8 @@ app.get('/:userConf/manifest.json', function (req, res) {
         if (!((req || {}).params || {}).userConf) return;
 
         if (req.params.userConf === "configure") {
-           return respond(res, newManifest);
-        }else if (req.params.userConf === "addon") {
+            return respond(res, newManifest);
+        } else if (req.params.userConf === "addon") {
             newManifest.behaviorHints.configurable = true;
             newManifest.behaviorHints.configurationRequired = false;
             return respond(res, newManifest);
@@ -78,47 +78,47 @@ app.get('/:userConf/manifest.json', function (req, res) {
 app.get("/addon/catalog/:type/:id/genre=:genre", async (req, res, next) => {
     var { type, id, genre } = req.params;
     var metaData = [];
-    var values = [];
     id = id.replace(".json", "");
     genre = genre.replace(".json", "");
     if (id == "animecix") {
         const catalogGenres = catalogs[genre];
         var getUrl = `${process.env.API_HOST}/titles?type=${type}&genre=${catalogGenres}&onlyStreamable=true&page=1&perPage=72`
         try {
-            await axios.get(getUrl, { headers: header }).then((value) => {
+            await axios.get(getUrl, { headers: header }).then(async (value) => {
                 if (value && value.status == 200 && value.statusText == "OK") {
                     if (value && typeof (value.data.pagination.data) !== "undefined") {
-                        values = value.data.pagination.data;
+
+                        for await (const element of value.data.pagination.data) {
+                            if (!String(element.id).includes("0-")) {
+                                element.id = "0-" + element.id;
+                            }
+                            element.name_english = element.name_english == '' ? element.name : element.name_english;
+
+                            if (element.type === null || element.type === '') {
+                                element.type = element.title_type === "anime" ? "series" : element.title_type;
+                            }
+
+                            if (type === element.type) {
+                                var value = {
+                                    id: element.id,
+                                    type: element.type,
+                                    name: element.name_english,
+                                    poster: element.poster,
+                                    description: element.description,
+                                    genres: []
+                                }
+                                element.genres.forEach((data) => {
+                                    value.genres.push(data.display_name);
+                                })
+                                metaData.push(value);
+                            }
+                        }
                     }
                 }
             })
 
-            for await (const element of values) {
-                if (!String(element.id).includes("0-")) {
-                    element.id = "0-" + element.id;
-                }
-                element.name_english = element.name_english == '' ? element.name : element.name_english;
 
-                if (element.type === null || element.type === '') {
-                    element.type = element.title_type === "anime" ? "series" : element.title_type;
-                }
-
-                if (type === element.type) {
-                    var value = {
-                        id: element.id,
-                        type: element.type,
-                        name: element.name_english,
-                        poster: element.poster,
-                        description: element.description,
-                        genres: []
-                    }
-                    element.genres.forEach((data) => {
-                        value.genres.push(data.display_name);
-                    })
-                    metaData.push(value);
-                }
-            }
-           return respond(res, { metas: metaData });
+            return respond(res, { metas: metaData });
         } catch (error) {
             if (error) console.log(error);
         }
@@ -138,7 +138,7 @@ app.get("/addon/catalog/:type/:id/search=:search", async (req, res, next) => {
 
             var cached = myCache.get(search + "-" + type);
             if (cached) {
-               return respond(res, { metas: cached, cacheMaxAge: CACHE_MAX_AGE, staleRevalidate: STALE_REVALIDATE_AGE, staleError: STALE_ERROR_AGE });
+                return respond(res, { metas: cached, cacheMaxAge: CACHE_MAX_AGE, staleRevalidate: STALE_REVALIDATE_AGE, staleError: STALE_ERROR_AGE });
             }
             var anime = await searchVideo.SearchAnime(search);
 
@@ -169,7 +169,7 @@ app.get("/addon/catalog/:type/:id/search=:search", async (req, res, next) => {
                 }
             }
             myCache.set(search + "-" + type, metaData);
-           return  respond(res, { metas: metaData, cacheMaxAge: CACHE_MAX_AGE, staleRevalidate: STALE_REVALIDATE_AGE, staleError: STALE_ERROR_AGE });
+            return respond(res, { metas: metaData, cacheMaxAge: CACHE_MAX_AGE, staleRevalidate: STALE_REVALIDATE_AGE, staleError: STALE_ERROR_AGE });
         } else {
             return respond(res, { metas: [] });
 
@@ -194,13 +194,10 @@ app.get('/addon/meta/:type/:id/', async (req, res, next) => {
             var metaObj = {};
 
             var find = await searchVideo.FindAnimeDetail(findId);
-            if (typeof (find.name_english) !== "undefined") {
-                find.name_english = find.name_english == '' ? find.name : find.name_english;
-            }
 
-            if (find.type === null || find.type === '') {
-                find.type = find.title_type === "anime" ? "series" : find.title_type;
-            }
+            if (typeof (find.name_english) !== "undefined") find.name_english = find.name_english == '' ? find.name : find.name_english;
+            if (find.type === null || find.type === '') find.type = find.title_type === "anime" ? "series" : find.title_type;
+            
 
 
             metaObj = {
@@ -314,7 +311,7 @@ app.get('/addon/stream/:type/:id/', async (req, res, next) => {
                 for (const element of typeValue) {
                     element.extra = String(element.extra || '').trim().toLocaleLowerCase();
                     element.name = String(element.name || '').trim().toLocaleLowerCase();
-                    if (element.extra === 'yapay çeviri' || element.extra === 'yapay çeviri v3' || element.extra === '' || element.extra === "null") {
+                    if (element.extra.includes("yapay") || element.extra === '' || element.extra === "null") {
                         if (element.name === "tau video") {
                             if (element && Array.isArray(element.captions) && typeof (element.captions[0]) !== "undefined") {
                                 subs.push({
@@ -416,7 +413,7 @@ app.get('/addon/subtitles/:type/:id/:query?.json', async (req, res, next) => {
 
                     var subtitle = "";
 
-                    
+
                     var response = await axios.get(downloadUrl, { method: "GET", headers: subtitleHeader });
                     if (response && response.status == 200 && response.statusText == "OK") {
                         if (Path.extname(downloadUrl) !== ".srt" && Path.extname(downloadUrl) !== ".ass") {
