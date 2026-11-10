@@ -12,7 +12,7 @@ const manifest = {
     },
     stremioAddonsConfig: {
         issuer: "https://stremio-addons.net",
-        signature: "eyJhbGciOiJkaXIiLCJlbmMiOiJBMTI4Q0JDLUhTMjU2In0..FwRMeGBJ-D4C5P9YX-fvmA.K4APoyEYWX8WooZied9QGpOUpluQXtN7gSfNHsqZSUJ01UVZYnqmIDXBPOD-5TYVlP1uuDZT8375zCWp1zay0sDCma2bNLKEiJbUWzL85SeWu4GPxdqBIQe1sLlEyZaI.jPEXACRF1RKZgJYh0EhTQA"
+        signature: "eyJhbGciOiJkaXIiLCJlbmMiOiJBMTI4Q0JDLUhTMjU2In0.._4PHAeuXL8t-bDxxXfZSIg.fZ7ubd8mUVgszD70yfTuW1qyGbzSYCbsaIax70Ywx43_rGl2SYvkd2ozS2t4m2jVyu6aQ3Cklwd82_EtIJyatLwjUu6UWfvm8ZJWoRhlp4NH3ZYo1l3L-pVkI7_EERCv.y0PK21ii8rCB73l3LAsdBg"
     },
     config: [{
         key: "animecix",
