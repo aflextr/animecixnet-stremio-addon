@@ -22,7 +22,7 @@ jobs:
         with:
           registry: ghcr.io
           username: ${{ github.actor }} 
-          password: ${{ secrets.CR_PAT }} 
+          password: ${{ secrets.GITHUB_TOKEN }} 
 
       - name: 3. Docker İmajını Derle ve GHCR'ye Yükle (Build & Push)
         uses: docker/build-push-action@v5
